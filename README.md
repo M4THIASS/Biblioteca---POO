@@ -1,187 +1,93 @@
-# 📚 Sistem de Gestionare a Bibliotecii
-### Tema 3122A — Programare Orientată pe Obiecte în C++
-**Autor:** Mathias Bucsa — Grupa 3122A  
-**Facultatea de Inginerie Electrică și Știința Calculatoarelor**
+# Library Management System (C++)
 
----
+An object-oriented library management system written in C++17. It manages different kinds of books (physical, digital, audiobooks), users and loans, and includes an automatic late-return penalty system.
 
-## 📋 Descriere
+Built as a university project for the Object-Oriented Programming course (Stefan cel Mare University of Suceava, Faculty of Electrical Engineering and Computer Science). Developed and tested on Linux (WSL).
 
-Acest proiect implementează un sistem virtual pentru gestionarea unei biblioteci,
-dezvoltat în C++ folosind concepte fundamentale de Programare Orientată pe Obiecte.
+## Features
 
-Sistemul permite gestionarea mai multor tipuri de cărți (fizice, digitale, audiobook-uri),
-a utilizatorilor și a împrumuturilor, incluzând un sistem automat de penalități pentru
-întârzieri la returnare.
+- Class hierarchy of books: fiction, technical, digital (PDF/EPUB/MOBI) and audiobooks
+- Users with their own list of borrowed books
+- Loan management: borrowing, returning and availability checks
+- Automatic penalty calculation for late returns (0.5 lei per day)
+- Penalty report for all users
+- Unit tests and a Makefile-based build
 
----
-
-## 🏗️ Arhitectura proiectului
+## Project structure
 
 ```
-biblioteca-poo/
-├── src/                  # Codul sursă C++
-│   ├── Carte.h / .cpp        # Clasa de bază + clase derivate
-│   ├── Utilizator.h / .cpp   # Gestionare utilizatori
-│   ├── Biblioteca.h / .cpp   # Logica principală
-│   └── Imprumut.h / .cpp     # Sistem împrumuturi + penalități
-├── tests/                # Teste unitare
-│   └── test_carte.cpp
-├── docs/                 # Documentație
-├── Makefile              # Build system
-└── README.md
+src/                      C++ source code
+  Carte.h / .cpp          Base class and derived book classes
+  Utilizator.h / .cpp     User management
+  Biblioteca.h / .cpp     Main library logic
+  Imprumut.h / .cpp       Loans and penalties
+tests/                    Unit tests (test_carte.cpp)
+Makefile                  Build system
 ```
----
 
-## 🔷 Diagrama UML
+## Class design
+
 ```
-arte  (titlu, autor, isbn, disponibila)
-├── CarteFictiune     (gen)
-├── CarteTehnica      (domeniu)
-├── CarteDigitala     (format, linkDownload, dimensiuneMB)
-└── Audiobook         (narator, durataMinute)
-Utilizator  (nume, id, listaImprumuturi)
-Imprumut  (idUtilizator, isbn, dataImprumut, zileLimita)
-Biblioteca
-├── vector<Carte*>        carti
-├── vector<Utilizator>    utilizatori
-└── vector<Imprumut>      imprumuturiActive
+Carte (title, author, isbn, available)
+ |- CarteFictiune   (genre)
+ |- CarteTehnica    (domain)
+ |- CarteDigitala   (format, download link, size in MB)
+ |- Audiobook       (narrator, duration in minutes)
+
+Utilizator   (name, id, list of borrowed ISBNs)
+Imprumut     (user id, isbn, loan date, day limit)
+Biblioteca   (vector<Carte*>, vector<Utilizator>, vector<Imprumut>)
 ```
----
 
-## 📦 Descrierea claselor
+## OOP concepts used
 
-### Carte — Clasa de bază
-Reprezintă o carte generică din bibliotecă.
-- **Atribute:** titlu, autor, ISBN, disponibilitate
-- **Metode:** getteri/setteri, afiseazaDetalii() virtuală
+| Concept | Where |
+|---|---|
+| Classes and objects | All classes |
+| Encapsulation | Private attributes with getters and setters |
+| Inheritance | Four book types extend `Carte` |
+| Polymorphism | Virtual `afiseazaDetalii()` overridden in each derived class |
+| STL | `vector` of books, users and loans |
 
-### CarteFictiune — derivată din Carte
-Carte de tip ficțiune (SF, thriller, fantasy etc.)
-- **Atribute extra:** gen
+## Late-return penalties
 
-### CarteTehnica — derivată din Carte
-Carte tehnică sau academică.
-- **Atribute extra:** domeniu (ex: Programare, Matematică)
+Each loan stores its exact date using `time_t`. The program computes the days of delay against the loan limit, applies a penalty of 0.5 lei per day, and prints a report with the total for every user.
 
-### CarteDigitala — derivată din Carte
-Carte în format electronic.
-- **Atribute extra:** format (PDF/EPUB/MOBI), link download, dimensiune MB
+## Requirements
 
-### Audiobook — derivată din Carte
-Carte în format audio.
-- **Atribute extra:** narator, durată în minute (afișată ca Xh Ymin)
+- g++ with C++17 support
+- make
+- Linux or WSL (Windows Subsystem for Linux)
 
-### Utilizator
-Reprezintă un utilizator al bibliotecii.
-- **Atribute:** nume, ID, lista ISBN-urilor împrumutate
-- **Metode:** adaugă/elimină împrumut, afișează împrumuturi
-
-### Imprumut — funcționalitate unică
-Gestionează un împrumut activ cu sistem de penalități.
-- **Atribute:** ID utilizator, ISBN, data împrumutului, limita zile
-- **Penalitate:** 0.5 lei/zi întârziere
-- **Metode:** calculeazaZileIntarziere(), calculeazaPenalitate(), esteIntarziat()
-
-### Biblioteca
-Clasa principală care coordonează întregul sistem.
-- Gestionează catalogul de cărți și lista de utilizatori
-- Procesează împrumuturi și returnări
-- Generează rapoarte de penalități
-
----
-
-## 🔧 Cerințe sistem
-
-- **Compilator:** g++ cu suport C++17
-- **Build system:** make
-- **OS:** Linux / WSL (Windows Subsystem for Linux)
-
----
-
-## ⚙️ Compilare și rulare
-
-### Instalare dependențe (Ubuntu/WSL)
-
+```bash
 sudo apt update && sudo apt install -y g++ make
-
-### Compilare
-
-make
-
-### Rulare
-
-./app
-
-### Rulare teste unitare
-
-make test
-
-### Curățare fișiere compilate
-
-make clean
-
----
-
-## 💡 Concepte POO folosite
-
-| Concept | Unde este folosit |
-|---------|-------------------|
-| Clase și obiecte | Toate clasele din proiect |
-| Encapsulare | Atribute private + getteri/setteri în toate clasele |
-| Moștenire | CarteFictiune, CarteTehnica, CarteDigitala, Audiobook extind Carte |
-| Polimorfism | afiseazaDetalii() virtuală, suprascrisă în fiecare clasă derivată |
-| STL | vector de Carte, Utilizator, Imprumut |
-
----
-
-## 📊 Exemple de output
 ```
-Catalog bibliotecă:
 
+## Build and run
+
+```bash
+make          # compile
+./app         # run
+make test     # run the unit tests
+make clean    # remove build files
+```
+
+## Example output
+
+```
 === Catalog Biblioteca ===
 [FICTIUNE - SF] Carte: Dune | Autor: Frank Herbert | ISBN: ISBN001 | Disponibila
 [TEHNIC - Programare] Carte: Clean Code | Autor: Robert Martin | ISBN: ISBN002 | Disponibila
-[DIGITAL - PDF | 12.5MB] Carte: Design Patterns | Autor: Gang of Four | ISBN: ISBN003 | Disponibila
-  Download: https://biblioteca.ro/design-patterns.pdf
 [AUDIOBOOK | 4h 30min | Narator: Mike Chamberlain] Carte: Atomic Habits | Autor: James Clear | ISBN: ISBN005 | Disponibila
-==========================
 
-Operații împrumut:
-
-[LOG] Carte adaugata: Dune
 [LOG] Ion Popescu a imprumutat: ISBN001 (limita: 14 zile)
 [LOG] EROARE: Cartea ISBN001 nu este disponibila!
-
-Raport penalități:
-
-=== Raport Penalitati ===
-  ISBN: ISBN001 | Imprumutat pe: 16/04/2026 | Limita: 14 zile | In termen
-  ISBN: ISBN003 | Imprumutat pe: 16/04/2026 | Limita: 30 zile | In termen
-  Nicio intarziere inregistrata.
-=========================
 ```
 
----
+## Git workflow
 
-## 🚀 Funcționalitate unică — Sistem de Penalități
+Two branches: `main` for the stable version and `develop` for active development.
 
-Față de colegii din grupă, acest proiect include un sistem automat de penalități
-pentru întârzieri la returnarea cărților:
+## Author
 
-- Fiecare împrumut reține data exactă a împrumutului folosind time_t
-- Se calculează automat zilele de întârziere față de limita stabilită
-- Penalitatea este de 0.5 lei/zi întârziere
-- Raportul afișează totalul penalităților pentru toți utilizatorii
-
----
-
-## 📁 Git și Development
-
-Proiectul folosește un flux standard cu două branch-uri:
-- main — versiunea stabilă, finală
-- develop — branch-ul de dezvoltare activă
-
-
-Trecere pe branch-ul de dezvoltare:
-git checkout develop
+Mathias Bucsa
